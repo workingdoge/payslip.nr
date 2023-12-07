@@ -1,0 +1,21 @@
+{
+  "name": "sample-dapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aztec/aztec.js": "^0.15.1",
+    "@aztec/noir-contracts": "^0.16.7"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  }
+}
