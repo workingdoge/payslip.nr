@@ -9,5 +9,8 @@
     "^(\\.{1,2}/.*)\\.js$": "$1"
   },
   "testRegex": "./test/.*\\.test\\.ts$",
-  "rootDir": "./test"
+  "rootDir": "./test",
+  "transform": {
+  "^.+\\.tsx?$": "ts-jest",
+  },
 }

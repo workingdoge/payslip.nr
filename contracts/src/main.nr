@@ -30,12 +30,18 @@ contract ReceiptCreator {
      receipt: Map<ImmutableSingleton<ReceiptNote, RECEIPT_NOTE_LEN>>
    } 
 
-  impl Storage {
-    fn init(context: Context) -> Self {
-      Storage {
-          receipt: Map::new(
-            context,
-            1,
+  
+impl Storage {
+    
+  fn init(context: Context) -> Self {
+      
+    Storage {
+          
+      receipt: Map::new(
+            
+        context,
+            
+        1,
             |context, slot| {
               ImmutableSingleton::new(context, slot, ReceiptNoteMethods)
             }
@@ -51,16 +57,24 @@ contract ReceiptCreator {
   }
 
   #[aztec(private)]
-  fn transfer_with_receipt(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
+  fn transfer_with_receipt_note(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
 
     let selector = compute_selector("transfer(AztecAddress,AztecAddress,Field,Field)");
 
     context.call_private_function(
       token_address,
       selector,
-      [from, to, amount, nonce]
+      [from.address, to.address, amount, nonce]
     )
 
+
   }
+
+  fn transfer_with_receipt_note(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
+}
+
+unconstrained fn compute_note_hash_and_nullifier(contract_address: Field, nonce: Field, storage_slot: Field, serialized_note: [Field; 0]) -> [Field; 4] {
+        [0, 0, 0, 0]
+    }
 
 }
