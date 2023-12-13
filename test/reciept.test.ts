@@ -22,18 +22,23 @@ describe('receipt contract', () => {
     sender = await createAccount(pxe);
     recipient = await createAccount(pxe);
 
-    console.log(pxe)
 
     token = await TokenContract.deploy(deployer, deployer.getCompleteAddress()).send().deployed()
     // token = await Contract.deploy(deployer, TokenArtifact, [deployer.getCompleteAddress()]).send().deployed();
-    receipt_creator = await ReceiptCreatorContract.deploy(deployer, token).send().deployed();
+
+    console.log("token deployed")
+    console.log(token)
+
+    receipt_creator = await ReceiptCreatorContract.deploy(deployer).send().deployed();
+    console.log("receipt_creator deployed")
+    console.log(receipt_creator)
 
 
   }, 60000);
 
-  xit('Check Contract Deployment', async () => {
-    // expect(token.completeAddress).toBeDefined()
-    // expect(receipt_creator.completeAddress).toBeDefined()
+  it('Check Contract Deployment', async () => {
+    expect(token.completeAddress).toBeDefined()
+    expect(receipt_creator.completeAddress).toBeDefined()
   })
 
   xit('Generate Receipt', async () => {

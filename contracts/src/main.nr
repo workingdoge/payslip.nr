@@ -53,7 +53,7 @@ impl Storage {
   #[aztec(private)]
   fn constructor(token: AztecAddress) {
         let selector = compute_selector("_initialize((Field))");
-        context.call_public_function(context.this_address(), selector, [token.address]);
+        context.call_public_function(context.this_address(), selector, []);
   }
 
   #[aztec(private)]
