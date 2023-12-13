@@ -14,7 +14,7 @@
     "formatting": "prettier --check ./src && eslint ./src",
     "formatting:fix": "prettier -w ./src",
     "compile": "aztec-cli compile ./contracts --outdir ./artifacts --typescript ./artifacts",
-    "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand && sed -i 's/@aztec\/noir-contracts;/@aztec\/noir-contracts\/types;/g' ./test/**/*.{ts,tsx}",
+    "test": "sh ./scripts/temp_test.sh",
     "test:b": "NODE_NO_WARNINGS=1 node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand"
   },
   "jest": {
@@ -30,7 +30,7 @@
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"
     },
-    "testRegex": "./test/.*\\.test\\.ts$"
+    "testRegex": "./test_temp/.*\\.test\\.ts$"
   },
   "dependencies": {
     "@aztec/aztec.js": "^0.16.9",
