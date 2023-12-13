@@ -60,3 +60,7 @@ packages
 
 # docs autogen build
 /docs/docs/noir_js/reference/
+
+
+# artifacts
+/contract/artifacts
