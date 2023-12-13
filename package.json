@@ -30,7 +30,7 @@
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"
     },
-    "testRegex": "./test_temp/.*\\.test\\.ts$"
+    "testRegex": "./test/.*\\.test\\.ts$"
   },
   "dependencies": {
     "@aztec/aztec.js": "^0.16.9",
