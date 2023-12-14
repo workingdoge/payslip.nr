@@ -1,6 +1,6 @@
-mod receipt_note;
+mod payslip_note;
 
-contract ReceiptCreator {
+contract Payslip {
   use dep::std;
 
   use dep::aztec::{
@@ -24,10 +24,10 @@ contract ReceiptCreator {
       },
   };
 
-  use crate::receipt_note::{ReceiptNote, ReceiptNoteMethods, RECEIPT_NOTE_LEN};
+  use crate::payslip_note::{PayslipNote, PayslipNoteMethods, PAYSLIP_NOTE_LEN};
 
   struct Storage {
-     receipt: Map<ImmutableSingleton<ReceiptNote, RECEIPT_NOTE_LEN>>
+     receipt: Map<ImmutableSingleton<PayslipNote, PAYSLIP_NOTE_LEN>>
    } 
 
   
@@ -43,7 +43,7 @@ impl Storage {
             
         1,
             |context, slot| {
-              ImmutableSingleton::new(context, slot, ReceiptNoteMethods)
+              ImmutableSingleton::new(context, slot, PayslipNoteMethods)
             }
           )
       } 
@@ -59,7 +59,7 @@ impl Storage {
   //}
 
   #[aztec(private)]
-  fn transfer_with_receipt_note(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
+  fn transfer_with_payslip(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
 
     let selector = compute_selector("transfer(AztecAddress,AztecAddress,Field,Field)");
 
