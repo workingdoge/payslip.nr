@@ -64,3 +64,4 @@ packages
 
 # artifacts
 /contract/artifacts
+/dist

@@ -5,7 +5,7 @@
     "target": "es2020",
     "lib": ["dom", "esnext", "es2017.object"],
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "nodenext",
     "strict": true,
     "declaration": true,
     "allowSyntheticDefaultImports": true,
