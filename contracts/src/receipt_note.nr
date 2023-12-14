@@ -64,27 +64,28 @@ fn deserialize(serialized_note: [Field; RECEIPT_NOTE_LEN]) -> ReceiptNote {
     ReceiptNote::deserialize(serialized_note)
 }
 
-fn serialize(note: ReceiptNote) -> [Field; RECEIPT_NOTE_LEN] {
-    note.serialize()
+fn serialize(receipt: ReceiptNote) -> [Field; RECEIPT_NOTE_LEN] {
+    receipt.serialize()
 }
 
-fn compute_note_hash(note: ReceiptNote) -> Field {
-    note.compute_note_hash()
+fn compute_note_hash(receipt: ReceiptNote) -> Field {
+    receipt.compute_note_hash()
 }
 
-fn compute_nullifier(note: ReceiptNote) -> Field {
-    note.compute_nullifier()
+fn compute_nullifier(receipt: ReceiptNote) -> Field {
+    receipt.compute_nullifier()
 }
 
-fn get_header(note: ReceiptNote) -> NoteHeader {
-    note.header
+fn get_header(receipt: ReceiptNote) -> NoteHeader {
+    receipt.header
 }
 
-fn set_header(note: &mut ReceiptNote, header: NoteHeader) {
-    note.set_header(header);
+fn set_header(receipt: &mut ReceiptNote, header: NoteHeader) {
+    receipt.set_header(header);
 }
 
-fn broadcast(context: &mut PrivateContext, slot: Field, note: ReceiptNote) {
+fn broadcast(context: &mut PrivateContext, slot: Field, receipt: ReceiptNote) {
+
     assert(false, "ReceiptNote does not support broadcast. Add it to PXE directly using the `.addNote` function.");
 }
 

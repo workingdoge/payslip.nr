@@ -51,10 +51,12 @@ impl Storage {
   }
 
   #[aztec(private)]
-  fn constructor(token: AztecAddress) {
-        let selector = compute_selector("_initialize((Field))");
-        context.call_public_function(context.this_address(), selector, []);
+  fn constructor() {
   }
+  //fn constructor(token: AztecAddress) {
+  //      let selector = compute_selector("_initialize((Field))");
+  //      context.call_public_function(context.this_address(), selector, []);
+  //}
 
   #[aztec(private)]
   fn transfer_with_receipt_note(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
