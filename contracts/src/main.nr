@@ -31,16 +31,11 @@ contract Payslip {
    } 
 
   
-impl Storage {
-    
-  fn init(context: Context) -> Self {
-      
+  impl Storage {
+   fn init(context: Context) -> Self {
     Storage {
-          
       receipt: Map::new(
-            
         context,
-            
         1,
             |context, slot| {
               ImmutableSingleton::new(context, slot, PayslipNoteMethods)
