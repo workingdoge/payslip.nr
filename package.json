@@ -14,7 +14,7 @@
     "formatting": "prettier --check ./src && eslint ./src",
     "formatting:fix": "prettier -w ./src",
     "compile": "aztec-cli compile ./contracts --typescript ../contracts/target",
-    "update:contract": "aztec-cli update --contract ./contract",
+    "update:contract": "aztec-cli update --contract ./contracts",
     "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
     "watch:contract": "ls ./contracts/**/*.nr | entr pnpm compile"
   },
@@ -38,11 +38,11 @@
   },
   "dependencies": {
     "@aztec/aztec.js": "0.16.9",
-    "@aztec/foundation": "^0.16.9",
+    "@aztec/foundation": "0.16.9",
     "@aztec/noir-contracts": "0.16.9"
   },
   "devDependencies": {
-    "@aztec/noir-compiler": "^0.16.9",
+    "@aztec/noir-compiler": "0.16.9",
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.4",

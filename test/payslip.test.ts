@@ -10,6 +10,7 @@ import {
   createPXEClient,
   Contract,
   Note,
+  computeAuthWitMessageHash,
 } from "@aztec/aztec.js";
 import { TokenContract } from "@aztec/noir-contracts/types";
 import { PayslipContract } from "../contracts/target/Payslip.js"
@@ -25,7 +26,7 @@ describe('receipt contract', () => {
   let payee: AccountWallet;
   let token: TokenContract;
   let payslip: PayslipContract;
-
+  let initialBalance: bigint;
 
   beforeAll(async () => {
     // setup
@@ -50,11 +51,11 @@ describe('receipt contract', () => {
     expect(payslip.completeAddress).toBeDefined()
   })
 
-  it('Distribute token to payer', async () => {
+  it('Mint and Distribute token to payer', async () => {
     //   // distribute token to sender
     //
     // distribute token
-    const initialBalance = 20n;
+    initialBalance = 20n;
     const secret: Fr = Fr.random();
 
     // this is for sending l1 to l2 messages, possibility for l2 to l2 messages?
@@ -72,5 +73,53 @@ describe('receipt contract', () => {
     expect(await token.methods.balance_of_private(payer.getAddress()).view()).toEqual(20n);
 
   }, 1000000)
+
+  it('Transfer and Generate Receipt', async () => {
+
+    //  distribute token to sender
+    const nonce = Fr.random()
+    const payerAddress = payer.getAddress()
+    const payeeAddress = payee.getAddress()
+
+    // generate authwit
+    const mint_payslip_and_transfer =
+      payslip.withWallet(payer).methods.mint_payslip_and_transfer(
+        token.address,
+        payerAddress,
+        payeeAddress,
+        initialBalance,
+        nonce
+      )
+
+    const transfer = token.methods.transfer(payerAddress, payeeAddress, initialBalance, nonce)
+
+    const authwit_message_hash = computeAuthWitMessageHash(payslip.address, transfer.request())
+    console.log(authwit_message_hash)
+    const witness = await payer.createAuthWitness(authwit_message_hash)
+    await payer.addAuthWitness(witness)
+
+
+    const payslip_receipt = await mint_payslip_and_transfer.send().wait()
+
+    console.log("payer: ", await token.methods.balance_of_private(payerAddress).view())
+    console.log("payee: ", await token.methods.balance_of_private(payeeAddress).view())
+
+
+    // verify balances are correct
+    expect(await token.methods.balance_of_private(payerAddress).view()).toEqual(0n);
+    expect(await token.methods.balance_of_private(payeeAddress).view()).toEqual(20n);
+
+
+    // TODO: payee (to) should be able to construct a proof that the transfer was sent from the payer (from)
+    // TODO: Create function which links payment note to receipt note
+
+    // TODO: Compute "safety_score": percentage of debits which have verified payers
+    // Get all transfers to account, get all receipts to account (link?) and divide all receipts by all transfers
+
+
+
+    // TODO: explore the encrypted log method and proofs with encrypted logs (decrypt)
+
+  }, 100000)
 
 })

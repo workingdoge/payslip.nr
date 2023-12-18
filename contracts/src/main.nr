@@ -4,44 +4,64 @@ contract Payslip {
   use dep::std;
 
   use dep::aztec::{
+
     context::{PrivateContext, PublicContext, Context},
+
     note::{
       note_header::NoteHeader,
       utils as note_utils,
     },
+
     state_vars::{
       map::Map,
       immutable_singleton::ImmutableSingleton,
+      public_state::PublicState
     },
+
     types::address::{AztecAddress},
+    types::type_serialization::{
+      field_serialization::{
+        FieldSerializationMethods, FIELD_SERIALIZED_LEN
+      },
+      bool_serialization::{
+        BoolSerializationMethods, BOOL_SERIALIZED_LEN
+      }
+    },
+
     selector::compute_selector,
   };
 
-  use dep::authwit::{
-      auth::{
-          assert_current_call_valid_authwit,
-          assert_current_call_valid_authwit_public,
-      },
-  };
+  use dep::authwit::auth::{IS_VALID_SELECTOR, assert_current_call_valid_authwit, compute_authwit_message_hash};
 
   use crate::payslip_note::{PayslipNote, PayslipNoteMethods, PAYSLIP_NOTE_LEN};
 
   struct Storage {
-     receipt: Map<ImmutableSingleton<PayslipNote, PAYSLIP_NOTE_LEN>>
+    nonce_for_approvals: PublicState<Field, FIELD_SERIALIZED_LEN>,
+    approvals: Map<PublicState<bool, BOOL_SERIALIZED_LEN>>,
+    payslips: Map<ImmutableSingleton<PayslipNote, PAYSLIP_NOTE_LEN>>,
    } 
 
   
   impl Storage {
    fn init(context: Context) -> Self {
     Storage {
-      receipt: Map::new(
+      nonce_for_approvals: PublicState::new(context, 1, FieldSerializationMethods),
+      approvals: Map::new(
         context,
-        1,
-            |context, slot| {
-              ImmutableSingleton::new(context, slot, PayslipNoteMethods)
-            }
-          )
-      } 
+        2,
+        |context, slot| {
+           PublicState::new(context, slot, BoolSerializationMethods)
+        }
+      ),
+
+      payslips: Map::new(
+        context,
+        3,
+        |context, slot| {
+           ImmutableSingleton::new(context, slot, PayslipNoteMethods)
+         }
+      )
+     } 
     }
   }
 
@@ -54,18 +74,44 @@ contract Payslip {
   //}
 
   #[aztec(private)]
-  fn transfer_with_payslip(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
+  fn mint_payslip_and_transfer(
+      token: AztecAddress, 
+      from: AztecAddress, 
+      to: AztecAddress,
+      amount: Field,
+      nonce: Field
+    ) {
 
-    let selector = compute_selector("transfer(AztecAddress,AztecAddress,Field,Field)");
+        let selector = compute_selector("transfer((Field),(Field),Field,Field)");
 
-    context.call_private_function(
-      token_address,
-      selector,
-      [from.address, to.address, amount, nonce]
-    )
-
+        context.call_private_function(              
+            token.address,                            
+            selector,                                 
+            [from.address, to.address, amount, nonce] 
+         );                                          
 
   }
+
+
+  #[aztec(public)]
+  internal fn _approve_token(token: AztecAddress, from: AztecAddress, to: AztecAddress, amount: Field ) {
+    let nonce = storage.nonce_for_approvals.read();
+    let selector = compute_selector("transfer((Field),(Field),Field,Field)");
+
+    let message_hash = 
+      compute_authwit_message_hash(
+        from,
+        token,
+        selector,
+        [from.address, to.address, amount, nonce] 
+      );
+
+
+     storage.approvals.at(message_hash).write(true);
+
+     storage.nonce_for_approvals.write(nonce + 1);
+
+}
 
  // fn transfer_with_receipt_note(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
  //}
