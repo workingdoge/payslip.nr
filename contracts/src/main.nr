@@ -36,8 +36,6 @@ contract Payslip {
   use crate::payslip_note::{PayslipNote, PayslipNoteMethods, PAYSLIP_NOTE_LEN};
 
   struct Storage {
-    nonce_for_approvals: PublicState<Field, FIELD_SERIALIZED_LEN>,
-    approvals: Map<PublicState<bool, BOOL_SERIALIZED_LEN>>,
     payslips: Map<ImmutableSingleton<PayslipNote, PAYSLIP_NOTE_LEN>>,
    } 
 
@@ -45,18 +43,9 @@ contract Payslip {
   impl Storage {
    fn init(context: Context) -> Self {
     Storage {
-      nonce_for_approvals: PublicState::new(context, 1, FieldSerializationMethods),
-      approvals: Map::new(
-        context,
-        2,
-        |context, slot| {
-           PublicState::new(context, slot, BoolSerializationMethods)
-        }
-      ),
-
       payslips: Map::new(
         context,
-        3,
+        1,
         |context, slot| {
            ImmutableSingleton::new(context, slot, PayslipNoteMethods)
          }
@@ -74,7 +63,7 @@ contract Payslip {
   //}
 
   #[aztec(private)]
-  fn mint_payslip_and_transfer(
+  fn transfer_and_mint_payslip(
       token: AztecAddress, 
       from: AztecAddress, 
       to: AztecAddress,
@@ -84,34 +73,46 @@ contract Payslip {
 
         let selector = compute_selector("transfer((Field),(Field),Field,Field)");
 
-        context.call_private_function(              
-            token.address,                            
-            selector,                                 
-            [from.address, to.address, amount, nonce] 
-         );                                          
+        context.call_private_function(
+            token.address,
+            selector,
+            [from.address, to.address, amount, nonce]
+         );
+
+       
+        let payslip = PayslipNote::new(
+               token.address, 
+               from.address, 
+               to.address, 
+               amount, 
+               context.timestamp()
+             );
+
+        // storage.payslips.at(to).write(payslip);
+//payslip
+        
 
   }
 
 
-  #[aztec(public)]
-  internal fn _approve_token(token: AztecAddress, from: AztecAddress, to: AztecAddress, amount: Field ) {
-    let nonce = storage.nonce_for_approvals.read();
-    let selector = compute_selector("transfer((Field),(Field),Field,Field)");
+  //#[aztec(public)]
+  //internal fn _approve_token(token: AztecAddress, from: AztecAddress, to: AztecAddress, amount: Field ) {
+  //  let nonce = storage.nonce_for_approvals.read();
+  //  let selector = compute_selector("transfer((Field),(Field),Field,Field)");
 
-    let message_hash = 
-      compute_authwit_message_hash(
-        from,
-        token,
-        selector,
-        [from.address, to.address, amount, nonce] 
-      );
+  //  let message_hash = 
+  //    compute_authwit_message_hash(
+  //      from,
+  //      token,
+  //      selector,
+  //      [from.address, to.address, amount, nonce] 
+  //    );
 
 
-     storage.approvals.at(message_hash).write(true);
+  //   storage.approvals.at(message_hash).write(true);
 
-     storage.nonce_for_approvals.write(nonce + 1);
-
-}
+  //   storage.nonce_for_approvals.write(nonce + 1);
+  //}
 
  // fn transfer_with_receipt_note(token_address: Field, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
  //}

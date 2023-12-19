@@ -37,10 +37,10 @@ impl PayslipNote {
 
   pub fn deserialize(serialized_note: [Field; PAYSLIP_NOTE_LEN]) -> Self {
     PayslipNote {
-      amount: serialized_note[0],
+      token_address: serialized_note[0],
       from: serialized_note[1],
       to: serialized_note[2],
-      token_address: serialized_note[3],
+      amount: serialized_note[3],
       timestamp: serialized_note[4],
       header: NoteHeader::empty(),
     }
