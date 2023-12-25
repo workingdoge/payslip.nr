@@ -4,43 +4,57 @@ use dep::aztec::{
         note_header::NoteHeader,
         note_interface::NoteInterface,
     },
+//    types::address::{AztecAddress},
     hash::pedersen_hash,
     context::PrivateContext,
 };
+use dep::protocol_types::address::AztecAddress;
 
 global PAYSLIP_NOTE_LEN: Field = 5;
 
 struct PayslipNote {
+  from: AztecAddress,
+  to: AztecAddress,
   amount: Field,
-  from: Field,
-  to: Field,
-  token_address: Field,
+  token: AztecAddress,
   timestamp: Field,
   header: NoteHeader,
 }
 
 impl PayslipNote {
-  pub fn new(amount: Field, from: Field, to: Field, token_address: Field, timestamp: Field) -> Self {
+  pub fn new(
+    from: AztecAddress, 
+    to: AztecAddress, 
+    amount: Field,  
+    token: AztecAddress, 
+    timestamp: Field
+  ) -> Self {
     PayslipNote {
-      amount,
       from,
       to,
-      token_address,
+      amount,
+      token,
       timestamp,
       header: NoteHeader::empty(),
     }
   }
 
   pub fn serialize(self) -> [Field; PAYSLIP_NOTE_LEN] {
-    [ self.amount, self.from, self.to, self.token_address, self.timestamp ]
+    [ 
+      self.from.to_field(), 
+      self.to.to_field(), 
+      self.amount as Field, 
+      self.token.to_field(),
+      self.timestamp
+    ]
   }
 
   pub fn deserialize(serialized_note: [Field; PAYSLIP_NOTE_LEN]) -> Self {
     PayslipNote {
-      token_address: serialized_note[0],
-      from: serialized_note[1],
-      to: serialized_note[2],
-      amount: serialized_note[3],
+      from: AztecAddress::from_field(serialized_note[0]),
+      to: AztecAddress::from_field(serialized_note[1]),
+      amount: serialized_note[2],
+      token: AztecAddress::from_field(serialized_note[3]),
       timestamp: serialized_note[4],
       header: NoteHeader::empty(),
     }

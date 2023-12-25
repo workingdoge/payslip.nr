@@ -68,14 +68,23 @@ contract Payslip {
       from: AztecAddress, 
       to: AztecAddress,
       amount: Field,
-      nonce: Field
+      nonce: Field,
+      timestamp: Field,
     ) {
 
-        let selector = compute_selector("transfer((Field),(Field),Field,Field)");
+        // context.timestamp can only be called in a public context 
+        // assert the supplied timestamp is accurate
+        context.call_public_function(
+            context.this_address(),
+            compute_selector("_assert_timestamp_is_same(Field)"),
+            [timestamp]
+        );
 
+
+        // transfer tokens
         context.call_private_function(
             token.address,
-            selector,
+            compute_selector("transfer((Field),(Field),Field,Field)"),
             [from.address, to.address, amount, nonce]
          );
 
@@ -85,13 +94,18 @@ contract Payslip {
                from.address, 
                to.address, 
                amount, 
-               context.timestamp()
+               timestamp
              );
+   
 
-        // storage.payslips.at(to).write(payslip);
-//payslip
+         //storage.payslips.at(to).initialize(payslip);
         
 
+  }
+
+  #[aztec(public)]
+  internal fn _assert_timestamp_is_same(time: Field) {
+     assert(context.timestamp() == time);
   }
 
 

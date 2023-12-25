@@ -83,7 +83,7 @@ describe('receipt contract', () => {
 
     // generate authwit
     const mint_payslip_and_transfer =
-      payslip.withWallet(payer).methods.mint_payslip_and_transfer(
+      payslip.withWallet(payer).methods.transfer_and_mint_payslip(
         token.address,
         payerAddress,
         payeeAddress,
