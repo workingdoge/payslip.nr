@@ -14,7 +14,6 @@ import {
 } from "@aztec/aztec.js";
 import { TokenContract } from "@aztec/noir-contracts/types";
 import { PayslipContract } from "../contracts/target/Payslip.js"
-// import { createSandbox } from "@aztec/aztec-sandbox"
 
 const { PXE_URL = "http://localhost:8080" } = process.env
 

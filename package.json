@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "@aztec/aztec.js": "0.16.9",
-    "@aztec/foundation": "0.16.9",
     "@aztec/noir-contracts": "0.16.9"
   },
   "devDependencies": {

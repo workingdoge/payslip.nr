@@ -1,14 +1,12 @@
-
 use dep::aztec::{
     note::{
         note_header::NoteHeader,
         note_interface::NoteInterface,
     },
-//    types::address::{AztecAddress},
+    types::address::AztecAddress,
     hash::pedersen_hash,
     context::PrivateContext,
 };
-use dep::protocol_types::address::AztecAddress;
 
 global PAYSLIP_NOTE_LEN: Field = 5;
 
@@ -41,20 +39,20 @@ impl PayslipNote {
 
   pub fn serialize(self) -> [Field; PAYSLIP_NOTE_LEN] {
     [ 
-      self.from.to_field(), 
-      self.to.to_field(), 
+      self.from.address, 
+      self.to.address, 
       self.amount as Field, 
-      self.token.to_field(),
+      self.token.address,
       self.timestamp
     ]
   }
 
   pub fn deserialize(serialized_note: [Field; PAYSLIP_NOTE_LEN]) -> Self {
     PayslipNote {
-      from: AztecAddress::from_field(serialized_note[0]),
-      to: AztecAddress::from_field(serialized_note[1]),
+      from: AztecAddress::new(serialized_note[0]),
+      to: AztecAddress::new(serialized_note[1]),
       amount: serialized_note[2],
-      token: AztecAddress::from_field(serialized_note[3]),
+      token: AztecAddress::new(serialized_note[3]),
       timestamp: serialized_note[4],
       header: NoteHeader::empty(),
     }
@@ -99,7 +97,9 @@ fn set_header(payslip: &mut PayslipNote, header: NoteHeader) {
 }
 
 fn broadcast(context: &mut PrivateContext, slot: Field, payslip: PayslipNote) {
-    assert(false, "PayslipNote does not support broadcast. Add it to PXE directly using the `.addNote` function.");
+    assert(
+        false, "PayslipNote does not support broadcast. Add it to PXE directly using the `.addNote` function."
+    );
 }
 
 global PayslipNoteMethods = NoteInterface {
