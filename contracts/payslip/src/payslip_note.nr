@@ -3,6 +3,12 @@ use dep::aztec::{
         note_header::NoteHeader,
         note_interface::NoteInterface,
     },
+    log::emit_encrypted_log,
+    oracle::{
+        rand::rand,
+        get_secret_key::get_secret_key,
+        get_public_key::get_public_key,
+    },
     types::address::AztecAddress,
     hash::pedersen_hash,
     context::PrivateContext,
@@ -15,7 +21,7 @@ struct PayslipNote {
   to: AztecAddress,
   amount: Field,
   token: AztecAddress,
-  timestamp: Field,
+  nonce: Field,
   header: NoteHeader,
 }
 
@@ -25,14 +31,14 @@ impl PayslipNote {
     to: AztecAddress, 
     amount: Field,  
     token: AztecAddress, 
-    timestamp: Field
+    nonce: Field
   ) -> Self {
     PayslipNote {
       from,
       to,
       amount,
       token,
-      timestamp,
+      nonce,
       header: NoteHeader::empty(),
     }
   }
@@ -41,9 +47,9 @@ impl PayslipNote {
     [ 
       self.from.address, 
       self.to.address, 
-      self.amount as Field, 
+      self.amount, 
       self.token.address,
-      self.timestamp
+      self.nonce
     ]
   }
 
@@ -53,7 +59,7 @@ impl PayslipNote {
       to: AztecAddress::new(serialized_note[1]),
       amount: serialized_note[2],
       token: AztecAddress::new(serialized_note[3]),
-      timestamp: serialized_note[4],
+      nonce: serialized_note[4],
       header: NoteHeader::empty(),
     }
   }
@@ -69,6 +75,19 @@ impl PayslipNote {
 
   pub fn set_header(&mut self, header: NoteHeader) {
         self.header = header;
+  }
+
+  pub fn broadcast(self, context: &mut PrivateContext, slot: Field) {
+      
+    let encryption_pub_key = get_public_key(self.to.address);
+   
+    emit_encrypted_log(
+      context,
+      (*context).this_address(),
+      slot,
+      encryption_pub_key,
+      self.serialize(),
+    );
   }
 }
 
@@ -93,13 +112,11 @@ fn get_header(payslip: PayslipNote) -> NoteHeader {
 }
 
 fn set_header(payslip: &mut PayslipNote, header: NoteHeader) {
-    payslip.set_header(header);
+    payslip.set_header(header)
 }
 
 fn broadcast(context: &mut PrivateContext, slot: Field, payslip: PayslipNote) {
-    assert(
-        false, "PayslipNote does not support broadcast. Add it to PXE directly using the `.addNote` function."
-    );
+    payslip.broadcast(context, slot);
 }
 
 global PayslipNoteMethods = NoteInterface {

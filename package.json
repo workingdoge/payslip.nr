@@ -13,10 +13,17 @@
     "start:sandbox": "SANDBOX_VERSION=latest /bin/bash -c \"$(curl -fsSL 'https://sandbox.aztec.network')\" ",
     "formatting": "prettier --check ./src && eslint ./src",
     "formatting:fix": "prettier -w ./src",
-    "compile": "aztec-cli compile ./contracts --typescript ../contracts/target",
-    "update:contract": "aztec-cli update --contract ./contracts",
+
+
     "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
-    "watch:contract": "ls ./contracts/**/*.nr | entr pnpm compile"
+
+
+    "update:contract": "aztec-cli update --contract ./contracts/{ledger,payslip}",
+    "compile": "pnpm compile:payslip && pnpm compile:ledger",
+    "compile:payslip": "aztec-cli compile ./contracts/payslip -ts ./target",
+    "compile:ledger": "aztec-cli compile ./contracts/ledger_account -ts ./target",
+    "watch:payslip": "ls ./contracts/payslip/**/*.nr | entr pnpm compile:payslip",
+    "watch:ledger": "ls ./contracts/ledger_account/**/*.nr | entr pnpm compile:ledger"
   },
   "jest": {
     "preset": "ts-jest/presets/default-esm",

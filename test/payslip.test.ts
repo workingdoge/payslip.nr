@@ -13,7 +13,7 @@ import {
   computeAuthWitMessageHash,
 } from "@aztec/aztec.js";
 import { TokenContract } from "@aztec/noir-contracts/types";
-import { PayslipContract } from "../contracts/target/Payslip.js"
+import { PayslipContract } from "../contracts/payslip/target/Payslip.js"
 
 const { PXE_URL = "http://localhost:8080" } = process.env
 
@@ -81,7 +81,7 @@ describe('receipt contract', () => {
     const payeeAddress = payee.getAddress()
 
     // generate authwit
-    const mint_payslip_and_transfer =
+    const transfer_and_mint_payslip =
       payslip.withWallet(payer).methods.transfer_and_mint_payslip(
         token.address,
         payerAddress,
@@ -98,7 +98,7 @@ describe('receipt contract', () => {
     await payer.addAuthWitness(witness)
 
 
-    const payslip_receipt = await mint_payslip_and_transfer.send().wait()
+    const payslip_receipt = await transfer_and_mint_payslip.send().wait()
 
     console.log("payer: ", await token.methods.balance_of_private(payerAddress).view())
     console.log("payee: ", await token.methods.balance_of_private(payeeAddress).view())
@@ -107,6 +107,12 @@ describe('receipt contract', () => {
     // verify balances are correct
     expect(await token.methods.balance_of_private(payerAddress).view()).toEqual(0n);
     expect(await token.methods.balance_of_private(payeeAddress).view()).toEqual(20n);
+
+    const storageSlot = new Fr(1); // The storage slot of `payslips` is 1.
+    const payslipNote = new Note([payerAddress, payeeAddress, new Fr(initialBalance), nonce]);
+    const extendedPayslipNote = new ExtendedNote(payslipNote, payer.getAddress(), token.address, storageSlot, payslip_receipt.txHash);
+    await pxe.addNote(extendedPayslipNote);
+
 
 
     // TODO: payee (to) should be able to construct a proof that the transfer was sent from the payer (from)
