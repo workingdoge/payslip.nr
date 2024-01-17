@@ -1,7 +1,12 @@
+use dep::aztec::protocol_types::{
+  address::AztecAddress
+};
+
 use dep::aztec::{
     note::{
         note_header::NoteHeader,
         note_interface::NoteInterface,
+        utils::compute_note_hash_for_read_or_nullify,
     },
     log::emit_encrypted_log,
     oracle::{
@@ -9,14 +14,14 @@ use dep::aztec::{
         get_secret_key::get_secret_key,
         get_public_key::get_public_key,
     },
-    types::address::AztecAddress,
     hash::pedersen_hash,
     context::PrivateContext,
 };
 
-global PAYSLIP_NOTE_LEN: Field = 5;
+global PAYSLIP_NOTE_LEN: Field = 6;
 
 struct PayslipNote {
+  owner: AztecAddress,
   from: AztecAddress,
   to: AztecAddress,
   amount: Field,
@@ -27,6 +32,7 @@ struct PayslipNote {
 
 impl PayslipNote {
   pub fn new(
+    owner: AztecAddress,
     from: AztecAddress, 
     to: AztecAddress, 
     amount: Field,  
@@ -34,6 +40,7 @@ impl PayslipNote {
     nonce: Field
   ) -> Self {
     PayslipNote {
+      owner,
       from,
       to,
       amount,
@@ -45,21 +52,23 @@ impl PayslipNote {
 
   pub fn serialize(self) -> [Field; PAYSLIP_NOTE_LEN] {
     [ 
-      self.from.address, 
-      self.to.address, 
+      self.owner.to_field(),
+      self.from.to_field(), 
+      self.to.to_field(), 
       self.amount, 
-      self.token.address,
+      self.token.to_field(),
       self.nonce
     ]
   }
 
   pub fn deserialize(serialized_note: [Field; PAYSLIP_NOTE_LEN]) -> Self {
     PayslipNote {
-      from: AztecAddress::new(serialized_note[0]),
-      to: AztecAddress::new(serialized_note[1]),
-      amount: serialized_note[2],
-      token: AztecAddress::new(serialized_note[3]),
-      nonce: serialized_note[4],
+      owner: AztecAddress::from_field(serialized_note[0]),
+      from: AztecAddress::from_field(serialized_note[1]),
+      to: AztecAddress::from_field(serialized_note[2]),
+      amount: serialized_note[3],
+      token: AztecAddress::from_field(serialized_note[4]),
+      nonce: serialized_note[5],
       header: NoteHeader::empty(),
     }
   }
@@ -70,7 +79,13 @@ impl PayslipNote {
 
   // receipt cannot be nullified
   pub fn compute_nullifier(self) -> Field {
-    0
+    let note_hash_for_nullify = compute_note_hash_for_read_or_nullify(PayslipNoteMethods, self);
+    let secret = get_secret_key(self.owner);
+    pedersen_hash([
+      note_hash_for_nullify,
+      secret.low,
+      secret.high
+    ],0)
   }
 
   pub fn set_header(&mut self, header: NoteHeader) {
@@ -79,7 +94,7 @@ impl PayslipNote {
 
   pub fn broadcast(self, context: &mut PrivateContext, slot: Field) {
       
-    let encryption_pub_key = get_public_key(self.to.address);
+    let encryption_pub_key = get_public_key(self.to);
    
     emit_encrypted_log(
       context,
