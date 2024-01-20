@@ -62,32 +62,28 @@ payslips: Map<AztecAddress, Set<PayslipNote, PAYSLIP_NOTE_LEN>>,
     #[aztec(private)]
     fn transfer_and_mint_payslip(token: AztecAddress, from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
         // transfer tokens
-        context.call_private_function(
-            token.address,
+        let _ = context.call_private_function(
+            token,
             FunctionSelector::from_signature("transfer((Field),(Field),Field,Field)"),
-            [from.address, to.address, amount, nonce]
+            [AztecAddress::to_field(from), AztecAddress::to_field(to), amount, nonce]
         );
         // Does it make sense to just commit to the hash of the inputs to the function instead?
         let mut from_payslip = PayslipNote::new(from, from, to, amount, token, nonce);
         let mut to_payslip = PayslipNote::new(to, from, to, amount, token, nonce);
-        storage.payslips.at(from.address).insert(&mut from_payslip, false);
-        storage.payslips.at(to.address).insert(&mut to_payslip, false);
+        storage.payslips.at(from).insert(&mut from_payslip, false);
+        storage.payslips.at(to).insert(&mut to_payslip, false);
     }
 
     #[aztec(public)]
     internal fn _initialize() {}
 
-    unconstrained  fn compute_note_hash_and_nullifier(
-        contract_address: Field,
+    unconstrained fn compute_note_hash_and_nullifier(
+        contract_address: AztecAddress,
         nonce: Field,
         storage_slot: Field,
         serialized_note: [Field; 4]
     ) -> pub [Field; 4] {
-        let note_header = NoteHeader::new(
-            AztecAddress::from_field(contract_address),
-            nonce,
-            storage_slot
-        );
+        let note_header = NoteHeader::new(contract_address, nonce, storage_slot);
         note_utils::compute_note_hash_and_nullifier(PayslipNoteMethods, note_header, serialized_note)
     }
 }
